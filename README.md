@@ -1,18 +1,20 @@
-### Openclash lite version
+## Openclash lite version
 
+#### Telegram group:
+[![SanTech](https://img.shields.io/badge/SanTech-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/+TuLCASzJrVJmNzM1)
 
 
 
 Original repo dari [@vernesong/OpenClash](https://github.com/vernesong/OpenClash)
 
-## Menambahkan
+### Menambahkan
 - Menampilkan IP
 - Panel yacd
 - Panel metacube
 - Panel config editor
 
 
-## Tambahan
+### Tambahan
 Untuk config editor silakan install tinyfm agar berfungsi dengan baik
 ```
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/bobbyunknown/luci-app-tinyfm/refs/heads/main/install.sh)"
@@ -37,7 +39,7 @@ Untuk informasi lebih lanjut, silakan kunjungi repo asli.
 
 Screenshot
 
-## Screenshot
+### Screenshot
 
 ![Dashboard](img/dashboard.gif)
 ![Yacd](img/yacd.png)
