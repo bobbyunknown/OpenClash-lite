@@ -38,7 +38,7 @@ force_install_package() {
     FILENAME=$(basename "$DOWNLOAD_URL")
     wget -O "/tmp/$FILENAME" "$DOWNLOAD_URL"
     
-    opkg install --force-overwrite "/tmp/$FILENAME"
+    opkg install --force-reinstall "/tmp/$FILENAME"
     
     rm "/tmp/$FILENAME"
     echo "Force install $PACKAGE_NAME selesai."
