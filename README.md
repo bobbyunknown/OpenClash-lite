@@ -1,5 +1,10 @@
 ## Openclash lite version
 
+
+[![GitHub Downloads](https://img.shields.io/github/downloads/bobbyunknown/OpenClash-lite/total?style=for-the-badge&logo=github)](https://github.com/bobbyunknown/OpenClash-lite/releases)
+[![GitHub Views](https://komarev.com/ghpvc/?username=bobbyunknown&repo=OpenClash-lite&style=for-the-badge&color=brightgreen&label=VIEWS)](https://github.com/bobbyunknown/OpenClash-lite)
+
+
 #### Telegram group:
 [![SanTech](https://img.shields.io/badge/SanTech-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/+TuLCASzJrVJmNzM1)
 
