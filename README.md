@@ -1,7 +1,7 @@
 ### Openclash lite version
 
 
-**Openclash versi ringan**
+
 
 Original repo dari [@vernesong/OpenClash](https://github.com/vernesong/OpenClash)
 
