@@ -13,6 +13,14 @@ Original repo dari [@vernesong/OpenClash](https://github.com/vernesong/OpenClash
 - Panel metacube
 - Panel config editor
 
+### Install
+- Install manual silakan download di release
+- Auto install
+```
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/bobbyunknown/OpenClash-lite/refs/heads/main/install.sh)"
+```
+
+
 
 ### Tambahan
 Untuk config editor silakan install tinyfm agar berfungsi dengan baik
