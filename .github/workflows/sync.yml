@@ -21,7 +21,9 @@ jobs:
       - name: Sync with upstream (excluding specific files)
         run: |
           git checkout main
-          git checkout upstream/dev $(git ls-files | grep -v -f .syncignore)
+          git merge upstream/dev --no-commit --no-ff
+          git reset HEAD $(cat .syncignore)
+          git checkout -- $(cat .syncignore)
           git status
           git config user.name github-actions
           git config user.email github-actions@github.com
@@ -31,11 +33,8 @@ jobs:
       - name: Update version
         run: |
           UPSTREAM_VERSION=$(git rev-parse upstream/dev)
-
           COMMIT_DATE=$(git log -1 --format=%cd --date=short upstream/dev)
-
           sed -i "s/versi: .*/versi: dev-$COMMIT_DATE (${UPSTREAM_VERSION:0:7})/" README.md
-          
           git add README.md
           git commit -m "Update versi ke dev-$COMMIT_DATE (${UPSTREAM_VERSION:0:7})" || echo "No version changes to commit"
-          git push || echo "No version changes to push"
+          git push origin main || echo "No version changes to push"
