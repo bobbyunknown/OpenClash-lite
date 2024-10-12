@@ -33,7 +33,7 @@ jobs:
           echo "Files in .syncignore:"
           cat .syncignore
           echo "Files to be synced:"
-          git ls-files | grep -v -f .syncignore
+          git ls-files | grep -v -f .syncignore || true
           if [ -f .syncignore ]; then
             set +e  # Izinkan script untuk melanjutkan meskipun ada kesalahan
             git checkout upstream/dev -- $(git ls-files | grep -v -f .syncignore)
