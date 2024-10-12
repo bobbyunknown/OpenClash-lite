@@ -42,9 +42,8 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/bobbyunknown/luci-app-ti
 Ini adalah versi ringan dari OpenClash, sebuah klien Clash untuk OpenWrt. Beberapa fitur utama:
 
 
-- Kompatibel dengan protokol Shadowsocks, ShadowsocksR, Vmess, Trojan, Snell, dll.
+- Kompatibel dengan protokol Shadowsocks, ShadowsocksR, Vmess, Trojan, dll.
 - Menggunakan aturan konfigurasi yang fleksibel untuk proxy strategis
-- Berbasis pada proyek Luci For Clash oleh frainzy1477
 
 
 Untuk informasi lebih lanjut, silakan kunjungi repo asli.
