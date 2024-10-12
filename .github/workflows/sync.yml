@@ -28,6 +28,12 @@ jobs:
         run: |
           git checkout main
           git fetch upstream
+          echo "Current branch:"
+          git branch --show-current
+          echo "Files in .syncignore:"
+          cat .syncignore
+          echo "Files to be synced:"
+          git ls-files | grep -v -f .syncignore
           if [ -f .syncignore ]; then
             set +e  # Izinkan script untuk melanjutkan meskipun ada kesalahan
             git checkout upstream/dev -- $(git ls-files | grep -v -f .syncignore)
@@ -36,6 +42,7 @@ jobs:
             echo ".syncignore file not found"
             git checkout upstream/dev -- .
           fi
+          echo "Git status after sync:"
           git status
           git add .
           git commit -m "Sync dengan upstream dev branch (kecuali file yang dikecualikan)" || echo "No changes to commit"
@@ -47,9 +54,20 @@ jobs:
         run: |
           UPSTREAM_VERSION=$(git rev-parse upstream/dev)
           COMMIT_DATE=$(git log -1 --format=%cd --date=short upstream/dev)
-          sed -i "s/versi: .*/versi: dev-$COMMIT_DATE (${UPSTREAM_VERSION:0:7})/" README.md
+          echo "Upstream version: $UPSTREAM_VERSION"
+          echo "Commit date: $COMMIT_DATE"
+          if [ -f luci-app-openclash/Makefile ]; then
+            MAKEFILE_VERSION=$(grep 'PKG_VERSION:=' luci-app-openclash/Makefile | cut -d'=' -f2)
+            echo "Makefile version: $MAKEFILE_VERSION"
+            sed -i "s/versi: .*/versi: $MAKEFILE_VERSION/" README.md
+          else
+            echo "Makefile not found"
+            sed -i "s/versi: .*/versi: dev-$COMMIT_DATE (${UPSTREAM_VERSION:0:7})/" README.md
+          fi
+          echo "README.md content:"
+          cat README.md
           git add README.md
-          git commit -m "Update versi ke dev-$COMMIT_DATE (${UPSTREAM_VERSION:0:7})" || echo "No version changes to commit"
+          git commit -m "Update versi ke $MAKEFILE_VERSION" || echo "No version changes to commit"
           git push origin main || echo "No version changes to push"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
