@@ -3,7 +3,7 @@ name: Sync with upstream
 on:
   schedule:
     - cron: '0 0 * * *'  
-  workflow_dispatch:  
+  workflow_dispatch: 
 
 jobs:
   sync:
@@ -25,17 +25,17 @@ jobs:
           git status
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git commit -m "Sync dengan upstream (kecuali file yang dikecualikan)"
+          git commit -m "Sync dengan upstream dev branch (kecuali file yang dikecualikan)"
           git push origin main
 
       - name: Update version
         run: |
-          # Ambil versi terbaru dari upstream
-          UPSTREAM_VERSION=$(curl -s https://api.github.com/repos/vernesong/OpenClash/releases/latest | jq -r .tag_name)
-          
-          # Update versi di file yang relevan (misalnya README.md)
-          sed -i "s/versi: .*/versi: $UPSTREAM_VERSION/" README.md
+          UPSTREAM_VERSION=$(git rev-parse upstream/dev)
+
+          COMMIT_DATE=$(git log -1 --format=%cd --date=short upstream/dev)
+
+          sed -i "s/versi: .*/versi: dev-$COMMIT_DATE (${UPSTREAM_VERSION:0:7})/" README.md
           
           git add README.md
-          git commit -m "Update versi ke $UPSTREAM_VERSION"
+          git commit -m "Update versi ke dev-$COMMIT_DATE (${UPSTREAM_VERSION:0:7})"
           git push
