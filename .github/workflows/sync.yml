@@ -1,0 +1,41 @@
+name: Sync with upstream
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  
+  workflow_dispatch:  
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/vernesong/OpenClash.git
+          git fetch upstream
+
+      - name: Sync with upstream (excluding specific files)
+        run: |
+          git checkout main
+          git checkout upstream/dev $(git ls-files | grep -v -f .syncignore)
+          git status
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git commit -m "Sync dengan upstream (kecuali file yang dikecualikan)"
+          git push origin main
+
+      - name: Update version
+        run: |
+          # Ambil versi terbaru dari upstream
+          UPSTREAM_VERSION=$(curl -s https://api.github.com/repos/vernesong/OpenClash/releases/latest | jq -r .tag_name)
+          
+          # Update versi di file yang relevan (misalnya README.md)
+          sed -i "s/versi: .*/versi: $UPSTREAM_VERSION/" README.md
+          
+          git add README.md
+          git commit -m "Update versi ke $UPSTREAM_VERSION"
+          git push
