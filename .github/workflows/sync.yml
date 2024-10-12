@@ -29,17 +29,15 @@ jobs:
           git checkout main
           git fetch upstream
           if [ -f .syncignore ]; then
-            while IFS= read -r file
-            do
-              git checkout upstream/dev -- . ':!'"$file"
-            done < .syncignore
+            set +e  # Izinkan script untuk melanjutkan meskipun ada kesalahan
+            git checkout upstream/dev -- $(git ls-files | grep -v -f .syncignore)
+            set -e  # Kembali ke mode strict setelah operasi checkout
           else
             echo ".syncignore file not found"
             git checkout upstream/dev -- .
           fi
           git status
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          git add .
           git commit -m "Sync dengan upstream dev branch (kecuali file yang dikecualikan)" || echo "No changes to commit"
           git push origin main || echo "No changes to push"
         env:
