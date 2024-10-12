@@ -25,7 +25,7 @@ jobs:
 
       - name: Copy files from upstream
         run: |
-          rsync -av --exclude='.git' --exclude-from=.syncignore upstream/ .
+          rsync -av --exclude='.git' --exclude='.github/workflows/' --exclude-from=.syncignore upstream/ .
 
       - name: Commit and push changes
         run: |
