@@ -9,7 +9,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       
@@ -21,7 +21,7 @@ jobs:
       - name: Sync with upstream (excluding specific files)
         run: |
           git checkout main
-          git merge upstream/dev --no-commit --no-ff
+          git merge upstream/dev --allow-unrelated-histories --no-commit --no-ff
           git reset HEAD $(cat .syncignore)
           git checkout -- $(cat .syncignore)
           git status
