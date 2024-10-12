@@ -28,8 +28,15 @@ jobs:
         run: |
           git checkout main
           git merge upstream/dev --allow-unrelated-histories --no-commit --no-ff
-          git reset HEAD $(cat .syncignore)
-          git checkout -- $(cat .syncignore)
+          if [ -f .syncignore ]; then
+            while IFS= read -r file
+            do
+              git reset HEAD "$file" 2>/dev/null || true
+              git checkout -- "$file" 2>/dev/null || true
+            done < .syncignore
+          else
+            echo ".syncignore file not found"
+          fi
           git status
           git commit -m "Sync dengan upstream dev branch (kecuali file yang dikecualikan)" || echo "No changes to commit"
           git push origin main || echo "No changes to push"
