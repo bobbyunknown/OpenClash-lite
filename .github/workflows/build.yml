@@ -25,7 +25,6 @@ jobs:
         cd openwrt-sdk
         ./scripts/feeds update -a
         ./scripts/feeds install -a
-        make defconfig
 
     - name: Prepare Dev OpenClash
       run: |
@@ -36,8 +35,8 @@ jobs:
     - name: Build Dev OpenClash
       id: build_dev
       run: |
-        cd openwrt-sdk
-        make package/luci-app-openclash/compile V=s -j$(($(nproc)-1)) || echo "BUILD_FAILED=true" >> $GITHUB_ENV
+        cd openwrt-sdk && make defconfig
+        make package/luci-app-openclash/compile V=s -j$(nproc) 2>&1 | tee /tmp/openwrt-build.log || echo "BUILD_FAILED=true" >> $GITHUB_ENV
         if [ "${{ env.BUILD_FAILED }}" != "true" ]; then
           version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2 | tr -d ' ')
           mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-dev-${version}.ipk
@@ -55,18 +54,22 @@ jobs:
       id: build_stable
       run: |
         cd openwrt-sdk
-        make package/luci-app-openclash/compile V=s -j$(($(nproc)-1)) || echo "BUILD_FAILED=true" >> $GITHUB_ENV
+        make package/luci-app-openclash/compile V=s -j$(nproc) 2>&1 | tee -a /tmp/openwrt-build.log || echo "BUILD_FAILED=true" >> $GITHUB_ENV
         if [ "${{ env.BUILD_FAILED }}" != "true" ]; then
           version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2 | tr -d ' ')
           mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-stable-${version}.ipk
           echo "stable_version=${version}" >> $GITHUB_OUTPUT
         fi
 
-    - name: Error log compile
-      if: env.BUILD_FAILED == 'true'
+    - name: Log compile
+      if: always()
       run: |
-        echo "Build failed. Displaying error log:"
-        cat /tmp/openwrt-build.log
+        if [ -f /tmp/openwrt-build.log ]; then
+          echo "Build log contents:"
+          cat /tmp/openwrt-build.log
+        else
+          echo "Build log file not found."
+        fi
 
     - name: Check Existing Release
       id: check_release
