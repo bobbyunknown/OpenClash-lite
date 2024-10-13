@@ -19,26 +19,72 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-      - name: Clone upstream repository
+      # Sync Openclash stable
+      - name: Sync Openclash stable
         run: |
-          git clone --depth 1 -b dev https://github.com/vernesong/OpenClash.git upstream
+          git clone --depth 1 -b master https://github.com/vernesong/OpenClash.git temp_stable
+          rsync -av --delete --exclude='.git' --exclude-from=.syncignore temp_stable/ "Openclash stable/"
+          rm -rf temp_stable
+          # Hapus file dan direktori yang tercantum dalam .syncignore
+          while IFS= read -r line || [[ -n "$line" ]]; do
+            if [[ ! -z "$line" && ! "$line" =~ ^\s*# ]]; then
+              rm -rf "Openclash stable/$line"
+            fi
+          done < .syncignore
+          git add "Openclash stable"
+          git commit -m "Sync Openclash stable with upstream master (excluding items from .syncignore)" || echo "No changes to commit"
 
-      - name: Copy files from upstream
+      # Sync Openclash dev
+      - name: Sync Openclash dev
         run: |
-          rsync -av --exclude='.git' --exclude='.github/workflows/' --exclude-from=.syncignore upstream/ .
+          git clone --depth 1 -b dev https://github.com/vernesong/OpenClash.git temp_dev
+          rsync -av --delete --exclude='.git' --exclude='.github/workflows/' --exclude-from=.syncignore temp_dev/ "Openclash dev/"
+          rm -rf temp_dev
+          # Hapus file dan direktori yang tercantum dalam .syncignore
+          while IFS= read -r line || [[ -n "$line" ]]; do
+            if [[ ! -z "$line" && ! "$line" =~ ^\s*# ]]; then
+              rm -rf "Openclash dev/$line"
+            fi
+          done < .syncignore
+          git add "Openclash dev"
+          git commit -m "Sync Openclash dev with upstream (excluding items from .syncignore)" || echo "No changes to commit"
 
-      - name: Commit and push changes
+      # Sync Openclash core
+      - name: Sync Openclash core
         run: |
-          git add .
-          git commit -m "Sync with upstream dev branch" || echo "No changes to commit"
-          git push origin main
+          git clone --depth 1 -b core https://github.com/vernesong/OpenClash.git temp_core
+          rsync -av --delete --exclude='.git' temp_core/ "Openclash core/"
+          rm -rf temp_core
+          git add "Openclash core"
+          git commit -m "Sync Openclash core with upstream" || echo "No changes to commit"
+
+      # Sync Openclash official package
+      - name: Sync Openclash official package
+        run: |
+          git clone --depth 1 -b package https://github.com/vernesong/OpenClash.git temp_package
+          rsync -av --delete --exclude='.git' temp_package/ "Openclash official package/"
+          rm -rf temp_package
+          git add "Openclash official package"
+          git commit -m "Sync Openclash official package with upstream" || echo "No changes to commit"
+
+      # Update luci-app-openclash in Openclash dev
+      - name: Update luci-app-openclash in Openclash dev
+        run: |
+          git clone --depth 1 https://github.com/bobbyunknown/OpenClash-lite.git temp_lite
+          rsync -av temp_lite/luci-app-openclash/ "Openclash dev/luci-app-openclash/"
+          rm -rf temp_lite
+          git add "Openclash dev/luci-app-openclash"
+          git commit -m "Update luci-app-openclash from bobbyunknown/OpenClash-lite" || echo "No changes to commit"
+
+      - name: Push changes
+        run: git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update version
         run: |
-          if [ -f luci-app-openclash/Makefile ]; then
-            MAKEFILE_VERSION=$(grep 'PKG_VERSION:=' luci-app-openclash/Makefile | cut -d'=' -f2)
+          if [ -f "Openclash dev/luci-app-openclash/Makefile" ]; then
+            MAKEFILE_VERSION=$(grep 'PKG_VERSION:=' "Openclash dev/luci-app-openclash/Makefile" | cut -d'=' -f2)
             sed -i "s/versi: .*/versi: $MAKEFILE_VERSION/" README.md
             git add README.md
             git commit -m "Update versi ke $MAKEFILE_VERSION" || echo "No version changes to commit"
