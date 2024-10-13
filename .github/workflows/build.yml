@@ -20,32 +20,52 @@ jobs:
         tar xJf openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
         mv openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64 openwrt-sdk
 
-    - name: Build Dev IPK
-      id: build_dev
+    - name: Update feeds
       run: |
         cd openwrt-sdk
         ./scripts/feeds update -a
         ./scripts/feeds install -a
+
+    - name: Prepare Dev OpenClash
+      run: |
+        cd openwrt-sdk
         mkdir -p package/luci-app-openclash
         cp -R ../Openclash\ dev/luci-app-openclash/* package/luci-app-openclash/
-        make defconfig
-        make package/luci-app-openclash/compile V=s -j$(($(nproc)-1))
-        version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2 | tr -d ' ')
-        mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-dev-${version}.ipk
-        echo "dev_version=${version}" >> $GITHUB_OUTPUT
 
-    - name: Build Stable IPK
-      id: build_stable
+    - name: Build Dev OpenClash
+      id: build_dev
+      run: |
+        cd openwrt-sdk
+        make package/luci-app-openclash/compile V=s -j$(($(nproc)-1)) || echo "BUILD_FAILED=true" >> $GITHUB_ENV
+        if [ "${{ env.BUILD_FAILED }}" != "true" ]; then
+          version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2 | tr -d ' ')
+          mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-dev-${version}.ipk
+          echo "dev_version=${version}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Prepare Stable OpenClash
       run: |
         cd openwrt-sdk
         rm -rf package/luci-app-openclash
         mkdir -p package/luci-app-openclash
         cp -R ../Openclash\ stable/luci-app-openclash/* package/luci-app-openclash/
-        make defconfig
-        make package/luci-app-openclash/compile V=s -j$(($(nproc)-1))
-        version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2 | tr -d ' ')
-        mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-stable-${version}.ipk
-        echo "stable_version=${version}" >> $GITHUB_OUTPUT
+
+    - name: Build Stable OpenClash
+      id: build_stable
+      run: |
+        cd openwrt-sdk
+        make package/luci-app-openclash/compile V=s -j$(($(nproc)-1)) || echo "BUILD_FAILED=true" >> $GITHUB_ENV
+        if [ "${{ env.BUILD_FAILED }}" != "true" ]; then
+          version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2 | tr -d ' ')
+          mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-stable-${version}.ipk
+          echo "stable_version=${version}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Error log compile
+      if: env.BUILD_FAILED == 'true'
+      run: |
+        echo "Build failed. Displaying error log:"
+        cat /tmp/openwrt-build.log
 
     - name: Check Existing Release
       id: check_release
@@ -64,6 +84,7 @@ jobs:
         fi
 
     - name: Create Release
+      if: env.BUILD_FAILED != 'true'
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -75,7 +96,7 @@ jobs:
         prerelease: false
 
     - name: Upload Dev IPK
-      if: steps.check_release.outputs.dev_exists != '200'
+      if: env.BUILD_FAILED != 'true' && steps.check_release.outputs.dev_exists != '200'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -86,7 +107,7 @@ jobs:
         asset_content_type: application/octet-stream
 
     - name: Upload Stable IPK
-      if: steps.check_release.outputs.stable_exists != '200'
+      if: env.BUILD_FAILED != 'true' && steps.check_release.outputs.stable_exists != '200'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
