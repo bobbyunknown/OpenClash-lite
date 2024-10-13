@@ -1,0 +1,18 @@
+name: Hapus Riwayat Workflow Lama
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  hapus_riwayat:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hapus riwayat workflow
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          retain_days: 30
+          keep_minimum_runs: 6
