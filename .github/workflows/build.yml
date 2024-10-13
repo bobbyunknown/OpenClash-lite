@@ -108,8 +108,7 @@ jobs:
         gh release create "$release_tag" \
           --title "$release_name" \
           --notes "$release_body" \
-          --generate-notes=false \
-          --draft
+          --generate-notes=false
 
     - name: Upload Dev IPK
       if: env.BUILD_FAILED != 'true' && steps.check_release.outputs.dev_exists != '200'
