@@ -28,7 +28,7 @@ jobs:
         mkdir -p package/luci-app-openclash
         cp -R ../Openclash\ dev/luci-app-openclash/* package/luci-app-openclash/
         make defconfig
-        make package/luci-app-openclash/compile V=s
+        make package/luci-app-openclash/compile V=s -j$(($(nproc)-1))
         version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2 | tr -d ' ')
         mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-dev-${version}.ipk
         echo "DEV_VERSION=${version}" >> $GITHUB_ENV
@@ -40,7 +40,7 @@ jobs:
         mkdir -p package/luci-app-openclash
         cp -R ../Openclash\ stable/luci-app-openclash/* package/luci-app-openclash/
         make defconfig
-        make package/luci-app-openclash/compile V=s
+        make package/luci-app-openclash/compile V=s -j$(($(nproc)-1))
         version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2 | tr -d ' ')
         mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-stable-${version}.ipk
         echo "STABLE_VERSION=${version}" >> $GITHUB_ENV
