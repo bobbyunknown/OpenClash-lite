@@ -21,41 +21,17 @@ jobs:
         tar xJf openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
         mv openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64 openwrt-sdk
 
-    - name: Verify system dependencies
-      run: |
-        missing_pkgs=()
-        for pkg in build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget tar; do
-          if ! dpkg -s $pkg >/dev/null 2>&1; then
-            missing_pkgs+=($pkg)
-          fi
-        done
-        if [ ${#missing_pkgs[@]} -ne 0 ]; then
-          echo "Missing packages: ${missing_pkgs[*]}"
-          exit 1
-        fi
-        echo "All required packages are installed."
-
     - name: Update and install feeds
       run: |
         cd openwrt-sdk
-        for i in 1 2 3; do
-          ./scripts/feeds update -a && break || { echo "Feed update failed, retrying..."; sleep 10; }
-        done
-        for i in 1 2 3; do
-          ./scripts/feeds install -a && break || { echo "Feed install failed, retrying..."; sleep 10; }
-        done
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
 
     - name: Get Dev Version
       id: get_dev_version
       run: |
         cd Openclash\ dev/luci-app-openclash
         echo "dev_version=$(grep 'PKG_VERSION:=' Makefile | awk -F '=' '{print $2}' | tr -d ' ')" >> $GITHUB_OUTPUT
-
-    - name: Get Stable Version
-      id: get_stable_version
-      run: |
-        cd Openclash\ stable/luci-app-openclash
-        echo "stable_version=$(grep 'PKG_VERSION:=' Makefile | awk -F '=' '{print $2}' | tr -d ' ')" >> $GITHUB_OUTPUT
 
     - name: Prepare Dev OpenClash
       run: |
@@ -72,10 +48,16 @@ jobs:
       id: build_dev
       run: |
         cd openwrt-sdk && make defconfig
-        make package/luci-app-openclash/compile V=s -j$(nproc) 2>&1 | tee /tmp/openwrt-build.log || echo "BUILD_FAILED=true" >> $GITHUB_ENV
+        make package/luci-app-openclash/compile V=s -j$(nproc) || echo "BUILD_FAILED=true" >> $GITHUB_ENV
         if [ "${{ env.BUILD_FAILED }}" != "true" ]; then
           mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-dev-${{ steps.get_dev_version.outputs.dev_version }}.ipk
         fi
+
+    - name: Get Stable Version
+      id: get_stable_version
+      run: |
+        cd Openclash\ stable/luci-app-openclash
+        echo "stable_version=$(grep 'PKG_VERSION:=' Makefile | awk -F '=' '{print $2}' | tr -d ' ')" >> $GITHUB_OUTPUT
 
     - name: Prepare Stable OpenClash
       run: |
@@ -89,42 +71,22 @@ jobs:
       id: build_stable
       run: |
         cd openwrt-sdk
-        make package/luci-app-openclash/compile V=s -j$(nproc) 2>&1 | tee -a /tmp/openwrt-build.log || echo "BUILD_FAILED=true" >> $GITHUB_ENV
+        make package/luci-app-openclash/compile V=s -j$(nproc) || echo "BUILD_FAILED=true" >> $GITHUB_ENV
         if [ "${{ env.BUILD_FAILED }}" != "true" ]; then
           mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-stable-${{ steps.get_stable_version.outputs.stable_version }}.ipk
-        fi
-
-    - name: Log compile
-      if: always()
-      run: |
-        if [ -f /tmp/openwrt-build.log ]; then
-          echo "Compilation log summary:"
-          echo "------------------------"
-          echo "First line of the log:"
-          head -n 1 /tmp/openwrt-build.log
-          echo "------------------------"
-          echo "Last 50 lines of the log:"
-          tail -n 50 /tmp/openwrt-build.log
-          echo "------------------------"
-          echo "Searching for error messages:"
-          grep -i "error" /tmp/openwrt-build.log | tail -n 5
-          echo "------------------------"
-          echo "Total log lines: $(wc -l < /tmp/openwrt-build.log)"
-        else
-          echo "Compilation log file not found."
         fi
 
     - name: Check Existing Release
       id: check_release
       run: |
         if [ -n "${{ steps.get_dev_version.outputs.dev_version }}" ]; then
-          dev_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/bobbyunknown/OpenClash-lite/releases/download/${{ github.ref_name }}/openclash-lite-beta-dev-${{ steps.get_dev_version.outputs.dev_version }}.ipk)
+          dev_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/openclash-lite-beta-dev-${{ steps.get_dev_version.outputs.dev_version }}.ipk)
           echo "dev_exists=${dev_exists}" >> $GITHUB_OUTPUT
         else
           echo "dev_exists=404" >> $GITHUB_OUTPUT
         fi
         if [ -n "${{ steps.get_stable_version.outputs.stable_version }}" ]; then
-          stable_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/bobbyunknown/OpenClash-lite/releases/download/${{ github.ref_name }}/openclash-lite-beta-stable-${{ steps.get_stable_version.outputs.stable_version }}.ipk)
+          stable_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/openclash-lite-beta-stable-${{ steps.get_stable_version.outputs.stable_version }}.ipk)
           echo "stable_exists=${stable_exists}" >> $GITHUB_OUTPUT
         else
           echo "stable_exists=404" >> $GITHUB_OUTPUT
@@ -137,8 +99,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
 
