@@ -101,9 +101,20 @@ jobs:
         release_date=$(date +'%y%m%d')
         release_name="Openclash-Lite-${release_date}"
         release_tag="${{ steps.get_dev_version.outputs.dev_version }}"
-        release_body="### Openclash Lite version ${{ steps.get_dev_version.outputs.dev_version }} for openwrt
-        - Openclash core [HERE](https://github.com/bobbyunknown/OpenClash-lite/tree/main/Openclash%20core)
-        - Openclash IPK official [HERE](https://github.com/bobbyunknown/OpenClash-lite/tree/main/Openclash%20official%20package)"
+        release_body="# 🚀 Openclash Lite for OpenWRT
+
+        ## 📦 Release Versions
+        - 🔥 Dev: \`${{ steps.get_dev_version.outputs.dev_version }}\`
+        - 🛡️ Stable: \`${{ steps.get_stable_version.outputs.stable_version }}\`
+
+        ## 📥 Downloads
+        - [💻 Openclash Core](https://github.com/bobbyunknown/OpenClash-lite/tree/main/Openclash%20core)
+        - [📦 Official Openclash IPK](https://github.com/bobbyunknown/OpenClash-lite/tree/main/Openclash%20official%20package)
+
+        ---
+        > 🔔 Always ensure you're using the latest version for the best performance and security!
+
+           _Thank you for using Openclash Lite! 🙏_"
         
         gh release create "$release_tag" \
           --title "$release_name" \
