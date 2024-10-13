@@ -1,5 +1,4 @@
 .github/
-img/
 LICENSE
 README.md
 luci-app-openclash/luasrc/controller/openclash.lua
