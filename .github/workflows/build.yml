@@ -2,8 +2,9 @@ name: Build and Release OpenClash Lite IPK
 
 on:
   push:
-    tags:
-      - 'v*'
+    paths:
+      - 'Openclash dev/luci-app-openclash/Makefile'
+      - 'Openclash stable/luci-app-openclash/Makefile'
   workflow_dispatch:
 
 jobs:
@@ -102,7 +103,7 @@ jobs:
         release_tag="${{ steps.get_dev_version.outputs.dev_version }}"
         release_body="### Openclash Lite version ${{ steps.get_dev_version.outputs.dev_version }} for openwrt
         - Openclash core [HERE](https://github.com/bobbyunknown/OpenClash-lite/tree/main/Openclash%20core)
-        - Openclash official [HERE](https://github.com/bobbyunknown/OpenClash-lite/tree/main/Openclash%20official%20package)
+        - Openclash IPK official [HERE](https://github.com/bobbyunknown/OpenClash-lite/tree/main/Openclash%20official%20package)"
         
         gh release create "$release_tag" \
           --title "$release_name" \
