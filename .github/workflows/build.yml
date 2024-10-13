@@ -80,13 +80,13 @@ jobs:
       id: check_release
       run: |
         if [ -n "${{ steps.get_dev_version.outputs.dev_version }}" ]; then
-          dev_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/openclash-lite-beta-dev-${{ steps.get_dev_version.outputs.dev_version }}.ipk)
+          dev_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/${{ github.repository }}/releases/download/${{ steps.get_dev_version.outputs.dev_version }}/openclash-lite-beta-dev-${{ steps.get_dev_version.outputs.dev_version }}.ipk)
           echo "dev_exists=${dev_exists}" >> $GITHUB_OUTPUT
         else
           echo "dev_exists=404" >> $GITHUB_OUTPUT
         fi
         if [ -n "${{ steps.get_stable_version.outputs.stable_version }}" ]; then
-          stable_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/openclash-lite-beta-stable-${{ steps.get_stable_version.outputs.stable_version }}.ipk)
+          stable_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/${{ github.repository }}/releases/download/${{ steps.get_dev_version.outputs.dev_version }}/openclash-lite-beta-stable-${{ steps.get_stable_version.outputs.stable_version }}.ipk)
           echo "stable_exists=${stable_exists}" >> $GITHUB_OUTPUT
         else
           echo "stable_exists=404" >> $GITHUB_OUTPUT
@@ -94,34 +94,34 @@ jobs:
 
     - name: Create Release
       if: env.BUILD_FAILED != 'true'
-      id: create_release
-      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref_name }}
-        release_name: Release ${{ github.ref_name }}
-        draft: false
-        prerelease: false
+      run: |
+        release_date=$(date +'%y%m%d')
+        release_name="Openclash-Lite-${release_date}"
+        release_tag="${{ steps.get_dev_version.outputs.dev_version }}"
+        - release_body="Openclash Lite version ${{ steps.get_dev_version.outputs.dev_version }} for openwrt
+        - Openclash core [HERE](https://github.com/bobbyunknown/OpenClash-lite/tree/main/Openclash%20core)
+        - Openclash official [HERE](https://github.com/bobbyunknown/OpenClash-lite/tree/main/Openclash%20official%20package)
+        
+        gh release create "$release_tag" \
+          --title "$release_name" \
+          --notes "$release_body" \
+          --generate-notes=false \
+          --draft
 
     - name: Upload Dev IPK
       if: env.BUILD_FAILED != 'true' && steps.check_release.outputs.dev_exists != '200'
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./openclash-lite-beta-dev-${{ steps.get_dev_version.outputs.dev_version }}.ipk
-        asset_name: openclash-lite-beta-dev-${{ steps.get_dev_version.outputs.dev_version }}.ipk
-        asset_content_type: application/octet-stream
+      run: |
+        gh release upload ${{ steps.get_dev_version.outputs.dev_version }} \
+          ./openclash-lite-beta-dev-${{ steps.get_dev_version.outputs.dev_version }}.ipk
 
     - name: Upload Stable IPK
       if: env.BUILD_FAILED != 'true' && steps.check_release.outputs.stable_exists != '200'
-      uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./openclash-lite-beta-stable-${{ steps.get_stable_version.outputs.stable_version }}.ipk
-        asset_name: openclash-lite-beta-stable-${{ steps.get_stable_version.outputs.stable_version }}.ipk
-        asset_content_type: application/octet-stream
+      run: |
+        gh release upload ${{ steps.get_dev_version.outputs.dev_version }} \
+          ./openclash-lite-beta-stable-${{ steps.get_stable_version.outputs.stable_version }}.ipk
