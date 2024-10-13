@@ -5,5 +5,3 @@ luci-app-openclash/luasrc/controller/openclash.lua
 luci-app-openclash/luasrc/view/openclash/status.htm
 luci-app-openclash/luasrc/view/openclash/myip.htm
 luci-app-openclash/luasrc/view/openclash/developer.htm
-luci-app-openclash/po/
-luci-app-openclash/tools/
