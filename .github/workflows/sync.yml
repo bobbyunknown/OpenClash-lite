@@ -47,6 +47,24 @@ jobs:
           git add "Openclash dev"
           git commit -m "Sync Openclash dev with upstream dev" || echo "No changes to commit"
 
+      # Sync Openclash core
+      - name: Sync Openclash core
+        run: |
+          git clone --depth 1 -b core https://github.com/vernesong/OpenClash.git temp_core
+          rsync -av --delete --exclude='.git' --exclude-from=.syncignore temp_core/ "Openclash core/"
+          rm -rf temp_core
+          git add "Openclash core"
+          git commit -m "Sync Openclash core with upstream" || echo "No changes to commit"
+
+      # Sync Openclash official package
+      - name: Sync Openclash official package
+        run: |
+          git clone --depth 1 -b package https://github.com/vernesong/OpenClash.git temp_package
+          rsync -av --delete --exclude='.git' --exclude-from=.syncignore temp_package/ "Openclash official package/"
+          rm -rf temp_package
+          git add "Openclash official package"
+          git commit -m "Sync Openclash official package with upstream" || echo "No changes to commit"
+
       # Update luci-app-openclash in Openclash stable
       - name: Update luci-app-openclash in Openclash stable
         run: |
