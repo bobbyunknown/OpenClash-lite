@@ -65,10 +65,20 @@ jobs:
       if: always()
       run: |
         if [ -f /tmp/openwrt-build.log ]; then
-          echo "Build log contents:"
-          cat /tmp/openwrt-build.log
+          echo "Compilation log summary:"
+          echo "------------------------"
+          echo "First line of the log:"
+          head -n 1 /tmp/openwrt-build.log
+          echo "------------------------"
+          echo "Last 15 lines of the log:"
+          tail -n 15 /tmp/openwrt-build.log
+          echo "------------------------"
+          echo "Searching for error messages:"
+          grep -i "error" /tmp/openwrt-build.log | tail -n 5
+          echo "------------------------"
+          echo "Total log lines: $(wc -l < /tmp/openwrt-build.log)"
         else
-          echo "Build log file not found."
+          echo "Compilation log file not found."
         fi
 
     - name: Check Existing Release
