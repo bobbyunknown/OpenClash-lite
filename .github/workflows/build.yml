@@ -51,6 +51,11 @@ jobs:
         mkdir -p package/luci-app-openclash
         cp -R ../Openclash\ dev/luci-app-openclash/* package/luci-app-openclash/
 
+    - name: Compile po2lmo
+      run: |
+        cd openwrt-sdk/package/luci-app-openclash/tools/po2lmo
+        make && sudo make install
+
     - name: Build Dev OpenClash
       id: build_dev
       run: |
