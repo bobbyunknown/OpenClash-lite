@@ -58,6 +58,17 @@ jobs:
             echo "luci-app-openclash directory not found in Openclash stable"
           fi
 
+      # Update luci-app-openclash in Openclash dev
+      - name: Update luci-app-openclash in Openclash dev
+        run: |
+          if [ -d "Openclash dev/luci-app-openclash" ]; then
+            rsync -av "Openclash dev/luci-app-openclash/" "Openclash dev/luci-app-openclash/"
+            git add "Openclash dev/luci-app-openclash"
+            git commit -m "Update luci-app-openclash in Openclash dev" || echo "No changes to commit"
+          else
+            echo "luci-app-openclash directory not found in Openclash dev"
+          fi
+
       - name: Push changes
         run: git push origin main
         env:
