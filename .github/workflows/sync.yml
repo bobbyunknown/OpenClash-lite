@@ -25,14 +25,13 @@ jobs:
           git clone --depth 1 -b master https://github.com/vernesong/OpenClash.git temp_stable
           rsync -av --delete --exclude='.git' --exclude-from=.syncignore temp_stable/ "Openclash stable/"
           rm -rf temp_stable
-          # Hapus file dan direktori yang tercantum dalam .syncignore
           while IFS= read -r line || [[ -n "$line" ]]; do
             if [[ ! -z "$line" && ! "$line" =~ ^\s*# ]]; then
               rm -rf "Openclash stable/$line"
             fi
           done < .syncignore
           git add "Openclash stable"
-          git commit -m "Sync Openclash stable with upstream master (excluding items from .syncignore)" || echo "No changes to commit"
+          git commit -m "Sync Openclash stable with upstream master" || echo "No changes to commit"
 
       # Sync Openclash dev
       - name: Sync Openclash dev
@@ -40,41 +39,24 @@ jobs:
           git clone --depth 1 -b dev https://github.com/vernesong/OpenClash.git temp_dev
           rsync -av --delete --exclude='.git' --exclude='.github/workflows/' --exclude-from=.syncignore temp_dev/ "Openclash dev/"
           rm -rf temp_dev
-          # Hapus file dan direktori yang tercantum dalam .syncignore
           while IFS= read -r line || [[ -n "$line" ]]; do
             if [[ ! -z "$line" && ! "$line" =~ ^\s*# ]]; then
               rm -rf "Openclash dev/$line"
             fi
           done < .syncignore
           git add "Openclash dev"
-          git commit -m "Sync Openclash dev with upstream (excluding items from .syncignore)" || echo "No changes to commit"
+          git commit -m "Sync Openclash dev with upstream" || echo "No changes to commit"
 
-      # Sync Openclash core
-      - name: Sync Openclash core
+      # Update luci-app-openclash in Openclash stable
+      - name: Update luci-app-openclash in Openclash stable
         run: |
-          git clone --depth 1 -b core https://github.com/vernesong/OpenClash.git temp_core
-          rsync -av --delete --exclude='.git' temp_core/ "Openclash core/"
-          rm -rf temp_core
-          git add "Openclash core"
-          git commit -m "Sync Openclash core with upstream" || echo "No changes to commit"
-
-      # Sync Openclash official package
-      - name: Sync Openclash official package
-        run: |
-          git clone --depth 1 -b package https://github.com/vernesong/OpenClash.git temp_package
-          rsync -av --delete --exclude='.git' temp_package/ "Openclash official package/"
-          rm -rf temp_package
-          git add "Openclash official package"
-          git commit -m "Sync Openclash official package with upstream" || echo "No changes to commit"
-
-      # Update luci-app-openclash in Openclash dev
-      - name: Update luci-app-openclash in Openclash dev
-        run: |
-          git clone --depth 1 https://github.com/bobbyunknown/OpenClash-lite.git temp_lite
-          rsync -av temp_lite/luci-app-openclash/ "Openclash dev/luci-app-openclash/"
-          rm -rf temp_lite
-          git add "Openclash dev/luci-app-openclash"
-          git commit -m "Update luci-app-openclash from bobbyunknown/OpenClash-lite" || echo "No changes to commit"
+          if [ -d "Openclash stable/luci-app-openclash" ]; then
+            rsync -av "Openclash stable/luci-app-openclash/" "Openclash stable/luci-app-openclash/"
+            git add "Openclash stable/luci-app-openclash"
+            git commit -m "Update luci-app-openclash in Openclash stable" || echo "No changes to commit"
+          else
+            echo "luci-app-openclash directory not found in Openclash stable"
+          fi
 
       - name: Push changes
         run: git push origin main
@@ -83,8 +65,8 @@ jobs:
 
       - name: Update version
         run: |
-          if [ -f "Openclash dev/luci-app-openclash/Makefile" ]; then
-            MAKEFILE_VERSION=$(grep 'PKG_VERSION:=' "Openclash dev/luci-app-openclash/Makefile" | cut -d'=' -f2)
+          if [ -f "Openclash stable/luci-app-openclash/Makefile" ]; then
+            MAKEFILE_VERSION=$(grep 'PKG_VERSION:=' "Openclash stable/luci-app-openclash/Makefile" | cut -d'=' -f2)
             sed -i "s/versi: .*/versi: $MAKEFILE_VERSION/" README.md
             git add README.md
             git commit -m "Update versi ke $MAKEFILE_VERSION" || echo "No version changes to commit"
