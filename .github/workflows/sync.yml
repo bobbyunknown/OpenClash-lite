@@ -23,13 +23,13 @@ jobs:
       - name: Sync Openclash stable
         run: |
           git clone --depth 1 -b master https://github.com/vernesong/OpenClash.git temp_stable
-          rsync -av --delete --exclude='.git' --exclude-from=.syncignore temp_stable/ "Openclash stable/"
+          rsync -av --exclude='.git' --exclude-from=.syncignore temp_stable/ "Openclash stable/"
           rm -rf temp_stable
-          while IFS= read -r line || [[ -n "$line" ]]; do
-            if [[ ! -z "$line" && ! "$line" =~ ^\s*# ]]; then
-              rm -rf "Openclash stable/$line"
-            fi
-          done < .syncignore
+          # Hapus file-file yang tidak diinginkan secara eksplisit
+          rm -rf "Openclash stable/.github"
+          rm -f "Openclash stable/LICENSE"
+          rm -f "Openclash stable/README.md"
+          # Tambahkan perintah rm lain sesuai kebutuhan
           git add "Openclash stable"
           git commit -m "Sync Openclash stable with upstream master" || echo "No changes to commit"
 
@@ -37,15 +37,15 @@ jobs:
       - name: Sync Openclash dev
         run: |
           git clone --depth 1 -b dev https://github.com/vernesong/OpenClash.git temp_dev
-          rsync -av --delete --exclude='.git' --exclude='.github/workflows/' --exclude-from=.syncignore temp_dev/ "Openclash dev/"
+          rsync -av --exclude='.git' --exclude-from=.syncignore temp_dev/ "Openclash dev/"
           rm -rf temp_dev
-          while IFS= read -r line || [[ -n "$line" ]]; do
-            if [[ ! -z "$line" && ! "$line" =~ ^\s*# ]]; then
-              rm -rf "Openclash dev/$line"
-            fi
-          done < .syncignore
+          # Hapus file-file yang tidak diinginkan secara eksplisit
+          rm -rf "Openclash dev/.github"
+          rm -f "Openclash dev/LICENSE"
+          rm -f "Openclash dev/README.md"
+          # Tambahkan perintah rm lain sesuai kebutuhan
           git add "Openclash dev"
-          git commit -m "Sync Openclash dev with upstream" || echo "No changes to commit"
+          git commit -m "Sync Openclash dev with upstream dev" || echo "No changes to commit"
 
       # Update luci-app-openclash in Openclash stable
       - name: Update luci-app-openclash in Openclash stable

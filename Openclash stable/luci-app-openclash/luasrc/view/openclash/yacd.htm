@@ -1,0 +1,33 @@
+<%+header%>
+<!-----script ini dari bobbyunknown telegram https://t.me/+TuLCASzJrVJmNzM1-->
+<div class="cbi-map">
+    <iframe id="yacd" style="width: 100%; min-height: 600px; border: none; border-radius: 2px;"></iframe>
+</div>
+<script type="text/javascript">
+    XHR.get('<%=luci.dispatcher.build_url("admin", "services", "openclash", "status")%>', null, function(x, status) {
+        if (status && status.cn_port && status.dase) {
+            var url1;
+            if (status.daip && window.location.hostname == status.daip) {
+                url1 = "http://" + window.location.hostname + ":" + status.cn_port + "/ui/yacd/?hostname=" + window.location.hostname + "&port=" + status.cn_port + "&secret=" + status.dase;
+            } else if (status.daip && window.location.hostname != status.daip && status.db_foward_domain && status.db_foward_port) {
+                var ui_proto = status.db_forward_ssl == 0 ? 'http://' : 'https://';
+                url1 = ui_proto + status.db_foward_domain + ":" + status.db_foward_port + "/ui/yacd/?hostname=" + status.db_foward_domain + "&port=" + status.db_foward_port + "&secret=" + status.dase;
+            } else {
+                url1 = "http://" + window.location.hostname + ":" + status.cn_port + "/ui/yacd/";
+            }
+
+            console.log("URL yang dihasilkan: ", url1); 
+
+            var iframe = document.getElementById("yacd");
+            iframe.src = url1;
+            console.log("Iframe src diatur: ", iframe.src);
+
+            iframe.onerror = function() {
+                console.error("Error loading iframe");
+            };
+        } else {
+            console.error("Status tidak terisi dengan benar:", status);
+        }
+    });
+</script>
+<%+footer%>
