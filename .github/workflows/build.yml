@@ -21,6 +21,7 @@ jobs:
         mv openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64 openwrt-sdk
 
     - name: Build Dev IPK
+      id: build_dev
       run: |
         cd openwrt-sdk
         ./scripts/feeds update -a
@@ -31,9 +32,10 @@ jobs:
         make package/luci-app-openclash/compile V=s -j$(($(nproc)-1))
         version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2 | tr -d ' ')
         mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-dev-${version}.ipk
-        echo "DEV_VERSION=${version}" >> $GITHUB_ENV
+        echo "dev_version=${version}" >> $GITHUB_OUTPUT
 
     - name: Build Stable IPK
+      id: build_stable
       run: |
         cd openwrt-sdk
         rm -rf package/luci-app-openclash
@@ -43,13 +45,23 @@ jobs:
         make package/luci-app-openclash/compile V=s -j$(($(nproc)-1))
         version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2 | tr -d ' ')
         mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-stable-${version}.ipk
-        echo "STABLE_VERSION=${version}" >> $GITHUB_ENV
+        echo "stable_version=${version}" >> $GITHUB_OUTPUT
 
     - name: Check Existing Release
       id: check_release
       run: |
-        dev_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/bobbyunknown/OpenClash-lite/releases/download/${{ github.ref_name }}/openclash-lite-beta-dev-${{ env.DEV_VERSION }}.ipk)
-        stable_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/bobbyunknown/OpenClash-lite/releases/download/${{ github.ref_name }}/openclash-lite-beta-stable-
+        if [ -n "${{ steps.build_dev.outputs.dev_version }}" ]; then
+          dev_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/bobbyunknown/OpenClash-lite/releases/download/${{ github.ref_name }}/openclash-lite-beta-dev-${{ steps.build_dev.outputs.dev_version }}.ipk)
+          echo "dev_exists=${dev_exists}" >> $GITHUB_OUTPUT
+        else
+          echo "dev_exists=404" >> $GITHUB_OUTPUT
+        fi
+        if [ -n "${{ steps.build_stable.outputs.stable_version }}" ]; then
+          stable_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/bobbyunknown/OpenClash-lite/releases/download/${{ github.ref_name }}/openclash-lite-beta-stable-${{ steps.build_stable.outputs.stable_version }}.ipk)
+          echo "stable_exists=${stable_exists}" >> $GITHUB_OUTPUT
+        else
+          echo "stable_exists=404" >> $GITHUB_OUTPUT
+        fi
 
     - name: Create Release
       id: create_release
@@ -63,21 +75,23 @@ jobs:
         prerelease: false
 
     - name: Upload Dev IPK
+      if: steps.check_release.outputs.dev_exists != '200'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./openclash-lite-beta-dev-*.ipk
-        asset_name: openclash-lite-beta-dev.ipk
+        asset_path: ./openclash-lite-beta-dev-${{ steps.build_dev.outputs.dev_version }}.ipk
+        asset_name: openclash-lite-beta-dev-${{ steps.build_dev.outputs.dev_version }}.ipk
         asset_content_type: application/octet-stream
 
     - name: Upload Stable IPK
+      if: steps.check_release.outputs.stable_exists != '200'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./openclash-lite-beta-stable-*.ipk
-        asset_name: openclash-lite-beta-stable.ipk
+        asset_path: ./openclash-lite-beta-stable-${{ steps.build_stable.outputs.stable_version }}.ipk
+        asset_name: openclash-lite-beta-stable-${{ steps.build_stable.outputs.stable_version }}.ipk
         asset_content_type: application/octet-stream
