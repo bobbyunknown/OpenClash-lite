@@ -1,65 +1,62 @@
-name: Build OpenClash Lite IPK
+name: Build and Release OpenClash Lite IPK
 
 on:
-  workflow_dispatch:
-    inputs:
-      release_type:
-        description: 'Tipe rilis (dev/stable/both)'
-        required: true
-        default: 'both'
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
-    - name: Set up OpenWrt SDK
+    - name: Setup OpenWrt SDK
       run: |
         sudo apt-get update
-        sudo apt install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget tar
+        sudo apt-get install -y build-essential ccache ecj fastjar file g++ gawk \
+        gettext git java-propose-classpath libelf-dev libncurses5-dev \
+        libncursesw5-dev libssl-dev python python2.7-dev python3 unzip wget \
+        python3-distutils python3-setuptools python3-dev rsync subversion \
+        swig time xsltproc zlib1g-dev
         wget https://downloads.openwrt.org/releases/23.05.5/targets/x86/64/openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
         tar xJf openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
         mv openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64 openwrt-sdk
+
+    - name: Build Dev IPK
+      run: |
         cd openwrt-sdk
         ./scripts/feeds update -a
         ./scripts/feeds install -a
-
-    - name: Build Dev IPK
-      if: github.event.inputs.release_type == 'dev' || github.event.inputs.release_type == 'both' || github.event_name == 'push'
-      run: |
-        cd openwrt-sdk
         mkdir -p package/luci-app-openclash
         cp -R ../Openclash\ dev/luci-app-openclash/* package/luci-app-openclash/
+        make defconfig
         make package/luci-app-openclash/compile V=s
-        version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2)
+        version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2 | tr -d ' ')
         mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-dev-${version}.ipk
-        rm -rf package/luci-app-openclash
+        echo "DEV_VERSION=${version}" >> $GITHUB_ENV
 
     - name: Build Stable IPK
-      if: github.event.inputs.release_type == 'stable' || github.event.inputs.release_type == 'both' || github.event_name == 'push'
       run: |
         cd openwrt-sdk
+        rm -rf package/luci-app-openclash
         mkdir -p package/luci-app-openclash
         cp -R ../Openclash\ stable/luci-app-openclash/* package/luci-app-openclash/
+        make defconfig
         make package/luci-app-openclash/compile V=s
-        version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2)
+        version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2 | tr -d ' ')
         mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-stable-${version}.ipk
+        echo "STABLE_VERSION=${version}" >> $GITHUB_ENV
 
-    - name: Upload IPK files
-      uses: actions/upload-artifact@v2
-      with:
-        name: openclash-lite-ipk
-        path: |
-          openclash-lite-beta-dev-*.ipk
-          openclash-lite-beta-stable-*.ipk
+    - name: Check Existing Release
+      id: check_release
+      run: |
+        dev_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/bobbyunknown/OpenClash-lite/releases/download/${{ github.ref_name }}/openclash-lite-beta-dev-${{ env.DEV_VERSION }}.ipk)
+        stable_exists=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/bobbyunknown/OpenClash-lite/releases/download/${{ github.ref_name }}/openclash-lite-beta-stable-
 
     - name: Create Release
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -70,8 +67,7 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Upload Release Assets
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    - name: Upload Dev IPK
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -81,8 +77,7 @@ jobs:
         asset_name: openclash-lite-beta-dev.ipk
         asset_content_type: application/octet-stream
 
-    - name: Upload Release Assets
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    - name: Upload Stable IPK
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
