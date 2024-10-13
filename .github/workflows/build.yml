@@ -1,0 +1,83 @@
+name: Build OpenClash Lite IPK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up OpenWrt SDK
+      run: |
+        sudo apt-get update
+        sudo apt update && sudo apt install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget tar
+        wget https://downloads.openwrt.org/releases/23.05.5/targets/x86/64/openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+        tar xJf openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+        mv openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64 openwrt-sdk
+        cd openwrt-sdk
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+
+    - name: Build Dev IPK
+      run: |
+        cd openwrt-sdk
+        mkdir -p package/luci-app-openclash
+        cp -R ../Openclash\ dev/luci-app-openclash/* package/luci-app-openclash/
+        make package/luci-app-openclash/compile V=s
+        version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2)
+        mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-dev-${version}.ipk
+        rm -rf package/luci-app-openclash
+
+    - name: Build Stable IPK
+      run: |
+        cd openwrt-sdk
+        mkdir -p package/luci-app-openclash
+        cp -R ../Openclash\ stable/luci-app-openclash/* package/luci-app-openclash/
+        make package/luci-app-openclash/compile V=s
+        version=$(grep "PKG_VERSION" package/luci-app-openclash/Makefile | cut -d '=' -f 2)
+        mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-stable-${version}.ipk
+
+    - name: Upload IPK files
+      uses: actions/upload-artifact@v2
+      with:
+        name: openclash-lite-ipk
+        path: |
+          openclash-lite-beta-dev-*.ipk
+          openclash-lite-beta-stable-*.ipk
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./openclash-lite-beta-dev-*.ipk
+        asset_name: openclash-lite-beta-dev.ipk
+        asset_content_type: application/octet-stream
+
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./openclash-lite-beta-stable-*.ipk
+        asset_name: openclash-lite-beta-stable.ipk
+        asset_content_type: application/octet-stream
