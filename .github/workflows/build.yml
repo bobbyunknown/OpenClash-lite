@@ -25,6 +25,7 @@ jobs:
         cd openwrt-sdk
         ./scripts/feeds update -a
         ./scripts/feeds install -a
+        make defconfig
 
     - name: Prepare Dev OpenClash
       run: |
