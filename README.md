@@ -1,6 +1,6 @@
 ## Openclash lite version
 
-[![EN](https://img.shields.io/badge/lang-EN-red.svg)](README-EN.md)
+[![EN](https://img.shields.io/badge/lang-EN-red.svg?style=for-the-badge)](README-EN.md)
 [![GitHub Downloads](https://img.shields.io/github/downloads/bobbyunknown/OpenClash-lite/total?style=for-the-badge&logo=github)](https://github.com/bobbyunknown/OpenClash-lite/releases)
 [![GitHub Views](https://img.shields.io/badge/VIEWS-973-brightgreen?style=for-the-badge&logo=github)](https://github.com/bobbyunknown/OpenClash-lite)
 
