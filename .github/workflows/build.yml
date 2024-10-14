@@ -49,6 +49,12 @@ jobs:
       id: build_dev
       run: |
         cd openwrt-sdk && make defconfig
+        sed -i 's/CONFIG_LUCI_SRCDIET=y/# CONFIG_LUCI_SRCDIET is not set/' .config
+        sed -i 's/CONFIG_LUCI_JSMIN=y/# CONFIG_LUCI_JSMIN is not set/' .config
+        sed -i 's/CONFIG_LUCI_CSSTIDY=y/# CONFIG_LUCI_CSSTIDY is not set/' .config
+        sed -i 's/# CONFIG_NO_STRIP is not set/CONFIG_NO_STRIP=y/' .config
+        sed -i 's/CONFIG_USE_STRIP=y/# CONFIG_USE_STRIP is not set/' .config
+        sed -i 's/CONFIG_USE_SSTRIP=y/# CONFIG_USE_SSTRIP is not set/' .config
         make package/luci-app-openclash/compile V=s -j$(nproc) || echo "BUILD_FAILED=true" >> $GITHUB_ENV
         if [ "${{ env.BUILD_FAILED }}" != "true" ]; then
           mv bin/packages/x86_64/base/luci-app-openclash*.ipk ../openclash-lite-beta-dev-${{ steps.get_dev_version.outputs.dev_version }}_all.ipk
