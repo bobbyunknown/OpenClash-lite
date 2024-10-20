@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - 'Openclash dev/luci-app-openclash/Makefile'
-      - 'Openclash stable/luci-app-openclash/Makefile'
   workflow_dispatch:
 
 jobs:
