@@ -1,9 +1,8 @@
 ## Openclash lite version
 
 [![EN](https://img.shields.io/badge/lang-EN-red.svg?style=for-the-badge)](README-EN.md)
-[![GitHub Downloads](https://img.shields.io/github/downloads/bobbyunknown/OpenClash-lite/total?style=for-the-badge&logo=github)](https://github.com/bobbyunknown/OpenClash-lite/releases)
-[![GitHub Views](https://img.shields.io/badge/VIEWS-973-brightgreen?style=for-the-badge&logo=github)](https://github.com/bobbyunknown/OpenClash-lite)
-
+[![GitHub Downloads](https://img.shields.io/github/downloads/bobbyunknown/OpenClash-lite/total?style=for-the-badge)](https://github.com/bobbyunknown)
+[![GitHub Release](https://img.shields.io/github/v/release/bobbyunknown/OpenClash-lite?style=for-the-badge)](https://github.com/bobbyunknown/OpenClash-lite/releases)
 
 #### Telegram group:
 [![SanTech](https://img.shields.io/badge/SanTech-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/+TuLCASzJrVJmNzM1)
