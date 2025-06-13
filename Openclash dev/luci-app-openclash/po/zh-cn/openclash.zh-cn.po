@@ -2811,9 +2811,6 @@ msgstr "流量（域名）探测能有效防止域名分流异常和DNS劫持失
 msgid "Override All Dns Query"
 msgstr "启用后将尽可能的覆盖DNS查询到的域名"
 
-msgid "(Support Vless By Pinyun)"
-msgstr "(由品云提供，支持 Vless)"
-
 msgid "Meta Settings"
 msgstr "Meta 设置"
 
@@ -3512,3 +3509,9 @@ msgstr "跳过安全路径检查"
 
 msgid "Enable If You Want Using Files Not in /etc/openclash in You Config"
 msgstr "如果您希望在配置中使用不在 /etc/openclash 中的文件，请启用该选项"
+
+msgid "Skip Safe Path Check"
+msgstr "跳过安全路径检查"
+
+msgid "Drop The Type of DNS Responsed"
+msgstr "丢弃指定类型的 DNS 回应"
