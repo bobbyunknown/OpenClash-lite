@@ -55,7 +55,7 @@
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  margin: 0;
+  margin: 16px auto;
   width: 100%;
   transition: all var(--transition-fast);
 }
@@ -66,7 +66,7 @@
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  padding: 20px;
+  padding: 16px;
   transition: all var(--transition-fast);
 }
 
@@ -214,7 +214,7 @@
   width: auto;
   height: 100%;
   position: relative;
-  margin-left: 120px;
+  margin-left: 180px;
   top: 0;
   right: 0;
   z-index: 1;
@@ -229,7 +229,7 @@
   font-size: 30px;
   text-align: center;
   padding-top: 10px;
-  margin: 0 0 0 -5%;
+  margin: 0 0 0 -15%;
   line-height: 35px;
   color: black;
 }
@@ -240,12 +240,11 @@
   height: 65%;
   display: grid;
   grid-template-columns: 1fr 1fr 120px;
-  gap: 8%;
+  gap: 5%;
   position: absolute;
-  margin: 0 0 0 8%;
+  margin: 0 auto;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 4px;
   position: relative;
 }
 
@@ -311,7 +310,7 @@
 
 .oc .card .general .dler-result {
   color: #444;
-  font-size: 16px;
+  font-size: 15px;
   white-space: nowrap;
   display: inline-block;
   width: 55%;
@@ -325,7 +324,7 @@
 
 .oc .card .general .dler-result2 {
   color: #444;
-  font-size: 16px;
+  font-size: 15px;
   white-space: nowrap;
   display: inline-block;
   width: 55%;
@@ -425,12 +424,8 @@
 
 @media screen and (max-width: 1200px) {
   .oc .dler-main-container {
-    margin: 0 16px;
+    margin: 11px auto;
     width: calc(100% - 32px);
-  }
-  
-  .oc .center {
-    min-width: 600px;
   }
   
   .oc .card .additional.collapsed {
@@ -456,27 +451,23 @@
   .oc .card .general {
     margin-left: 120px;
     padding-right: 8px;
-    min-width: 650px;
   }
   
   .oc .card .general .more {
     bottom: 6px;
     padding-right: 12px;
   }
-  
-  .oc .card .general .more p {
-    font-size: 11px;
-  }
+
 }
 
 @media screen and (max-width: 768px) {
   .oc .dler-main-container {
-    margin: 0 12px;
-    width: calc(100% - 24px);
+    margin: 10px auto;
+    width: 100%;
   }
   
   .oc .center {
-    min-width: 400px;
+    padding: 14px;
   }
   
   .oc .card .additional.collapsed {
@@ -502,12 +493,12 @@
   .oc .card .general {
     margin-left: 110px;
     padding-right: 6px;
-    min-width: 400px;
   }
   
   .oc .card .general h1 {
     font-size: 24px;
     line-height: 30px;
+    margin: 0;
   }
   
   .oc .card .general .dler-info {
@@ -545,15 +536,12 @@
     bottom: 4px;
     padding-right: 10px;
   }
-  
-  .oc .card .general .more p {
-    font-size: 10px;
-  }
+
 }
 
 @media screen and (max-width: 575px) {
   .oc .center {
-    min-width: 320px;
+    padding: 12px;
   }
   
   .oc .card .additional.collapsed {
@@ -577,23 +565,40 @@
   }
   
   .oc .card .general {
-    margin-left: 100px;
+    margin-left: 120px;
     padding-right: 4px;
-    min-width: 320px;
+  }
+
+  .oc .card .general .dler-info {
+    height: 60%;
   }
   
   .oc .card .general h1 {
-    font-size: 20px;
+    font-size: 18px;
     line-height: 26px;
+    margin: 0;
+  }
+
+  .oc .card .general .dler-title {
+    font-size: 12px;
+    width: 50%;
+  }
+
+  .oc .card .general .dler-result,
+  .oc .card .general .dler-result2 {
+    font-size: 12px;
+    width: 50%;
   }
   
   .oc .card .general .more {
     bottom: 2px;
     padding-right: 8px;
   }
-  
-  .oc .card .general .more p {
-    font-size: 9px;
+
+  .oc .card .general .btn {
+    width: 60px;
+    height: 60px !important;
+    font-size: 10px;
   }
 }
 </style>
